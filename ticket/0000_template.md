@@ -1,6 +1,6 @@
 ---
 # Possible stages: draft | todo | doing | need_review | reviewing | need_fix | done | rejected
-stage: draft
+stage: done
 ---
 
 # Title

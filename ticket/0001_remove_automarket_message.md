@@ -1,6 +1,6 @@
 ---
 # Possible stages: draft | todo | doing | need_review | reviewing | need_fix | done | rejected
-stage: need_review
+stage: done
 ---
 
 # Title remove automarket_message sub-crate
