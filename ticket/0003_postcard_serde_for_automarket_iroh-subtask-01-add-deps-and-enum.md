@@ -1,5 +1,7 @@
 ---
-stage: need_fix
+stage: doing
+claimed_from: need_fix
+claimed_at: 2026-06-03T09:52:33Z
 parent: 0003_postcard_serde_for_automarket_iroh
 ---
 
