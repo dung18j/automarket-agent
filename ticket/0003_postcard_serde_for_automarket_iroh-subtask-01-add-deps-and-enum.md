@@ -1,7 +1,5 @@
 ---
-stage: doing
-claimed_from: todo
-claimed_at: 2026-06-03T09:47:08Z
+stage: need_review
 parent: 0003_postcard_serde_for_automarket_iroh
 ---
 
@@ -55,3 +53,13 @@ Add after the existing `pub mod ping;` line.
 ## Verification
 
 - `cargo check -p automarket-iroh` compiles successfully.
+
+## Conversation
+
+- **2026-06-03**: Implemented by coder agent:
+  - Added `serde = { version = "1", features = ["derive"] }` and `postcard = { version = "1", default-features = false }` to `automarket-iroh/Cargo.toml`.
+  - Created `automarket-iroh/src/protocol.rs` with `PingMessage` enum (`Ping`, `Pong`, `Unknown`) deriving `Debug, PartialEq, Eq, Serialize, Deserialize`.
+  - Added `pub mod protocol;` to `automarket-iroh/src/lib.rs`.
+  - Added 2 unit tests: `test_ping_message_serialize_roundtrip` (postcard roundtrip for all variants) and `test_ping_message_debug_and_eq` (debug formatting and equality).
+  - All 4 package tests pass (2 new + 2 existing ping tests).
+  - Updated `CHANGELOG.md` under [Unreleased].
