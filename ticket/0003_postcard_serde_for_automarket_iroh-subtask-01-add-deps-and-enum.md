@@ -1,5 +1,7 @@
 ---
-stage: todo
+stage: doing
+claimed_from: todo
+claimed_at: 2026-06-03T09:47:08Z
 parent: 0003_postcard_serde_for_automarket_iroh
 ---
 
