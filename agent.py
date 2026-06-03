@@ -163,9 +163,12 @@ def run_opencode_manager(ticket_path, description):
         f"You are acting as a manager. Review the refined ticket: {ticket_path.stem}\n\n"
         f"Description:\n{description}\n\n"
         f"Read the project source code in {PROJECT_DIR} to verify technical feasibility.\n"
-        f"Update ticket stage to `todo` if the ticket has enough detail and clear instructions to be implemented.\n"
-        f"Update its `stage` to 'draft' if the ticket needs more information or corrections, add a "
-        f"'Comment:' section at the end of the file explaining what's missing."
+        f"Then edit the ticket file at {ticket_path}:\n"
+        f"- Change the `stage:` field in the front-matter (between --- lines) to `todo` "
+        f"if the ticket has enough detail and clear instructions to be implemented.\n"
+        f"- Change the `stage:` field to `draft` if the ticket needs more information or corrections, "
+        f"and add a 'Comment:' section at the end of the file explaining what's missing.\n"
+        f"The file uses front-matter format: ---\\nstage: <value>\\n---"
     )
     log(f"Manager reviewing {ticket_path.name}...")
     r = subprocess.run(
@@ -257,6 +260,10 @@ def main():
             output, ok = run_opencode_manager(ticket_path, description)
             if ok:
                 to_stage = get_stage(ticket_path)
+                if to_stage == from_stage:
+                    log(f"Manager did not change stage for {ticket_path.name}, checking output for decision")
+                    to_stage = "draft" if "Comment:" in ticket_path.read_text() else "todo"
+                set_stage(ticket_path, to_stage)
                 log(f"Manager set {ticket_path.name} to {to_stage}")
                 git_commit_push(AGENT_REPO, f"{ticket_path.stem}: manager reviewed to {to_stage}")
                 log_transition(ticket_path, "manager", from_stage, to_stage, "ok")

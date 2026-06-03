@@ -1,5 +1,5 @@
 ---
-stage: draft_review
+stage: draft
 ---
 
 # Title: Update README with current project status
@@ -65,3 +65,9 @@ Clarify the `Bot` trait mentioned in `automarket-trait` — note it requires imp
 - No `.env.example` exists in the repo — do not create one (out of scope), but note this in setup instructions
 - The browser UI instructions should mention installing `trunk` via `cargo install trunk`
 - Check that the architecture tree diagram aligns with the actual crate dependency graph in `docs/crate-structure.md`
+
+## Comment
+
+**Section 5 factual error**: The `Bot` trait in `automarket-trait/src/lib.rs` does NOT require `handle_trade`, `handle_ohlc`, or `handle_quote` methods. It only requires `symbol() -> &str` and `interval() -> &str`, plus implementing `Stream<Item = MarketItem>`. The three data types (`Trade`, `Ohlc`, `Quote`) are variants of the `MarketItem` enum — users pattern-match on them, not implement handlers. Fix this description before implementing.
+
+**Section 1 note**: The current README already says "JSONL files + PostgreSQL" in the arch tree (line 12), so the claim that it "currently only says 'JSONL files'" is slightly stale. The instruction to keep/verify PostgreSQL mention is fine as-is.
