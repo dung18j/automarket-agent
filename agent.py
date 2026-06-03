@@ -164,8 +164,8 @@ def run_opencode_manager(ticket_path, description):
         f"Description:\n{description}\n\n"
         f"Read the project source code in {PROJECT_DIR} to verify technical feasibility.\n"
         f"Update ticket stage to `todo` if the ticket has enough detail and clear instructions to be implemented.\n"
-        f"Update its `stage` to 'draft' if the ticket needs more information or corrections, add a 'Comment:' section at the end of the file "
-        f"explaining what's missing, then ."
+        f"Update its `stage` to 'draft' if the ticket needs more information or corrections, add a "
+        f"'Comment:' section at the end of the file explaining what's missing."
     )
     log(f"Manager reviewing {ticket_path.name}...")
     r = subprocess.run(
