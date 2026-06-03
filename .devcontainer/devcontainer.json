@@ -1,0 +1,27 @@
+{
+  "name": "automarket-dev",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml",
+        "fill-labs.dependi",
+        "vadimcn.vscode-lldb",
+        "bierner.github-markdown-preview"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "rust-analyzer.checkOnSave": true,
+        "rust-analyzer.cargo.features": "all"
+      }
+    }
+  },
+  "postCreateCommand": "cargo --version",
+  "remoteUser": "vscode",
+  "mounts": [
+    "source=cargo-cache,target=/usr/local/cargo/registry,type=volume"
+  ]
+}
