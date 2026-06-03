@@ -92,9 +92,25 @@ def run_opencode(ticket_path, description):
     )
     if r.returncode != 0:
         log(f"opencode failed: {r.stderr.strip()[-300:]}")
-        return False
+        return "", False
     log(f"opencode done")
-    return True
+    output = (r.stdout or "") + "\n" + (r.stderr or "")
+    return output.strip(), True
+
+
+def add_ticket_comment(ticket_path, comment):
+    text = ticket_path.read_text()
+    convo_marker = "## Conversation"
+    if convo_marker in text:
+        text = text.replace(
+            convo_marker,
+            f"{convo_marker}\n\n"
+            f"_opencode comment @ {time.strftime('%Y-%m-%d %H:%M:%S')}_\n\n{comment}",
+        )
+    else:
+        text += (f"\n\n{convo_marker}\n\n"
+                 f"_opencode comment @ {time.strftime('%Y-%m-%d %H:%M:%S')}_\n\n{comment}")
+    ticket_path.write_text(text)
 
 
 def main():
@@ -110,9 +126,10 @@ def main():
             claim_ticket(ticket_path)
             ensure_project()
             branch = create_ticket_branch(ticket_path.stem)
-            ok = run_opencode(ticket_path, description)
+            output, ok = run_opencode(ticket_path, description)
 
             if ok:
+                add_ticket_comment(ticket_path, output)
                 git_commit_push(PROJECT_DIR, f"Implement {ticket_path.stem}", branch)
                 finish_ticket(ticket_path)
             else:

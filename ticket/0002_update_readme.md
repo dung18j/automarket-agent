@@ -1,6 +1,6 @@
 ---
 # Possible stages: draft | todo | doing | need_review | reviewing | need_fix | done | rejected
-stage: need_review
+stage: doing
 ---
 
 # Title: Update README with current project status
@@ -19,3 +19,4 @@ requirements, suggesting an approach).
 -->
 
 reviewer: remove all agent related document on readme. the project don't care who contributors are,
+reviewer: implementer have to comment to ticket
