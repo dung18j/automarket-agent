@@ -6,3 +6,4 @@
 {"timestamp": "2026-06-03T09:11:48.931570+00:00", "ticket": "0002_update_readme.md", "role": "manager", "from": "draft_review", "to": "draft_review", "status": "ok", "details": ""}
 {"timestamp": "2026-06-03T09:15:04.874556+00:00", "ticket": "0002_update_readme.md", "role": "manager", "from": "draft_review", "to": "draft", "status": "ok", "details": ""}
 {"timestamp": "2026-06-03T09:16:24.900085+00:00", "ticket": "0002_update_readme.md", "role": "admin", "from": "draft", "to": "draft_review", "status": "ok", "details": ""}
+{"timestamp": "2026-06-03T09:17:05.604452+00:00", "ticket": "0002_update_readme.md", "role": "manager", "from": "draft_review", "to": "todo", "status": "ok", "details": ""}
