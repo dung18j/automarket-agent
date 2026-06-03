@@ -1,5 +1,7 @@
 ---
-stage: todo
+stage: doing
+claimed_from: todo
+claimed_at: 2026-06-03T10:01:09Z
 depends_on:
   - 0003_postcard_serde_for_automarket_iroh-subtask-01-add-deps-and-enum
   - 0003_postcard_serde_for_automarket_iroh-subtask-02-refactor-ping
