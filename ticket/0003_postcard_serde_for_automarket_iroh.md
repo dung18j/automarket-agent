@@ -1,7 +1,5 @@
 ---
-stage: draft_reviewing
-claimed_from: draft_review
-claimed_at: 2026-06-03T09:44:36Z
+stage: todo
 depends_on:
   - 0003_postcard_serde_for_automarket_iroh-subtask-01-add-deps-and-enum
   - 0003_postcard_serde_for_automarket_iroh-subtask-02-refactor-ping
@@ -119,3 +117,11 @@ The original draft ticket had several issues corrected during refinement:
 8. **Split into 3 sub-tasks**: Implemented as separate sub-tickets so work can be parallelized and tracked independently.
 
 9. **Added error handling table**: Quick-reference for developer to see server vs client error behavior at a glance.
+
+### Manager review (2026-06-03)
+
+Set stage to `todo`. Verified against the actual codebase — two corrections needed during implementation:
+
+1. **Section 1 (deps)**: `postcard = { version = "1", default-features = false }` does not enable the `alloc` feature, which is required for `postcard::to_vec()`. Change to `postcard = { version = "1", default-features = false, features = ["alloc"] }` or simply `postcard = "1"`.
+
+2. **Section 4 (consumers)**: `automarket-browser/src/main.rs:163` sends raw `b"ping"` on its own bi-stream (not via `ping::ping()`), and reads the response as UTF-8 on line 175. After the postcard refactoring the server will send/receive postcard-encoded data, so the browser **does** need changes — either switch to `ping::ping()` or encode/decode postcard directly.
