@@ -38,12 +38,16 @@ def read_description(path):
     return m.group(1).strip() if m else text.strip()
 
 
-def git_commit_push(repo, msg):
+def git_commit_push(repo, msg, branch=None):
     subprocess.run(["git", "add", "-A"], cwd=repo, capture_output=True, text=True)
     r = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=repo, capture_output=True)
     if r.returncode != 0:
         subprocess.run(["git", "commit", "-m", msg], cwd=repo, capture_output=True, text=True)
-    subprocess.run(["git", "push"], cwd=repo, capture_output=True, text=True)
+    if branch:
+        subprocess.run(["git", "push", "-u", "origin", branch], cwd=repo, capture_output=True, text=True)
+    else:
+        subprocess.run(["git", "push"], cwd=repo, capture_output=True, text=True)
+    subprocess.run(["git", "checkout", "main"], cwd=repo, capture_output=True, text=True)
 
 
 def claim_ticket(ticket_path):
@@ -63,6 +67,15 @@ def ensure_project():
         log(f"Clone {PROJECT_REPO}")
         subprocess.run(["git", "clone", PROJECT_REPO, str(PROJECT_DIR)], capture_output=True, text=True)
     subprocess.run(["git", "pull", "--rebase"], cwd=PROJECT_DIR, capture_output=True, text=True)
+
+
+def create_ticket_branch(ticket_stem):
+    branch = f"ticket/{ticket_stem}"
+    log(f"Switching to branch {branch}")
+    subprocess.run(["git", "checkout", "main"], cwd=PROJECT_DIR, capture_output=True, text=True)
+    subprocess.run(["git", "branch", "-D", branch], cwd=PROJECT_DIR, capture_output=True, text=True)
+    subprocess.run(["git", "checkout", "-b", branch], cwd=PROJECT_DIR, capture_output=True, text=True)
+    return branch
 
 
 def run_opencode(ticket_path, description):
@@ -96,10 +109,11 @@ def main():
 
             claim_ticket(ticket_path)
             ensure_project()
+            branch = create_ticket_branch(ticket_path.stem)
             ok = run_opencode(ticket_path, description)
 
             if ok:
-                git_commit_push(PROJECT_DIR, f"Implement {ticket_path.stem}")
+                git_commit_push(PROJECT_DIR, f"Implement {ticket_path.stem}", branch)
                 finish_ticket(ticket_path)
             else:
                 log(f"Reverting {ticket_path.name} to {stage}")
