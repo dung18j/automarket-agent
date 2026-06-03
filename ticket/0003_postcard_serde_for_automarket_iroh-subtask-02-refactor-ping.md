@@ -1,7 +1,5 @@
 ---
-stage: reviewing
-claimed_from: need_review
-claimed_at: 2026-06-03T09:59:11Z
+stage: reviewed
 parent: 0003_postcard_serde_for_automarket_iroh
 dependencies:
   - 0003_postcard_serde_for_automarket_iroh-subtask-01-add-deps-and-enum
@@ -129,3 +127,13 @@ No changes needed in `test_ping_pong` — it uses the `ping()` convenience funct
 
 - `cargo test -p automarket-iroh` passes.
 - Both `test_ping_pong` and `test_ping_unexpected_response` pass.
+
+## Conversation
+
+**Reviewer (2026-06-03):** Implementation is correct and complete.
+
+- All changes match the specification: `PingMessage` import added, server/client serialization updated, `PingError` enum refactored, and tests adapted.
+- Code compiles cleanly and both `test_ping_pong` and `test_ping_unexpected_response` pass.
+- **Minor spec note:** The ticket references `postcard::to_vec()` which requires a const generic buffer size in postcard 1.1.3. The implementation correctly uses `postcard::to_stdvec()` (returns standard `Vec<u8>`). No change needed — the implementer used the correct API for the context.
+
+Approved.
