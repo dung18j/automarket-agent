@@ -11,3 +11,4 @@
 {"timestamp": "2026-06-03T09:21:23.832528+00:00", "ticket": "0002_update_readme.md", "role": "reviewer", "from": "reviewing", "to": "reviewing", "status": "ok", "details": ""}
 {"timestamp": "2026-06-03T09:44:36.631678+00:00", "ticket": "0003_postcard_serde_for_automarket_iroh.md", "role": "admin", "from": "draft", "to": "draft_review", "status": "ok", "details": ""}
 {"timestamp": "2026-06-03T09:47:08.662158+00:00", "ticket": "0003_postcard_serde_for_automarket_iroh.md", "role": "manager", "from": "draft_review", "to": "todo", "status": "ok", "details": ""}
+{"timestamp": "2026-06-03T09:50:30.636476+00:00", "ticket": "0003_postcard_serde_for_automarket_iroh-subtask-01-add-deps-and-enum.md", "role": "coder", "from": "todo", "to": "need_review", "status": "ok", "details": ""}
