@@ -98,7 +98,7 @@ def run_opencode(ticket_path, description):
 
 
 def main():
-    log("Agent started – polling every {POLL_INTERVAL}s")
+    log(f"Agent started – polling every {POLL_INTERVAL}s")
     while True:
         for stage in ("need_fix", "todo"):
             tickets = get_tickets(stage)
