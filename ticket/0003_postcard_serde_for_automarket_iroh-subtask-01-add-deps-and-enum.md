@@ -1,5 +1,7 @@
 ---
-stage: need_review
+stage: reviewing
+claimed_from: need_review
+claimed_at: 2026-06-03T09:57:04Z
 parent: 0003_postcard_serde_for_automarket_iroh
 ---
 
