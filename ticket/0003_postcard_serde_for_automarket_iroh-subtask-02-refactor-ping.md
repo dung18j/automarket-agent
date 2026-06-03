@@ -1,5 +1,7 @@
 ---
-stage: need_review
+stage: reviewing
+claimed_from: need_review
+claimed_at: 2026-06-03T09:59:11Z
 parent: 0003_postcard_serde_for_automarket_iroh
 dependencies:
   - 0003_postcard_serde_for_automarket_iroh-subtask-01-add-deps-and-enum
