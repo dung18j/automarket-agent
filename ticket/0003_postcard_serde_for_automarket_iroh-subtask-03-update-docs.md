@@ -1,7 +1,5 @@
 ---
-stage: reviewing
-claimed_from: need_review
-claimed_at: 2026-06-03T10:06:45Z
+stage: reviewed
 parent: 0003_postcard_serde_for_automarket_iroh
 dependencies:
   - 0003_postcard_serde_for_automarket_iroh-subtask-02-refactor-ping
@@ -74,3 +72,5 @@ Add an entry under the next release:
 
 - **docs/automarket-iroh.md**: Server-side section now references postcard-encoded `PingMessage` instead of raw bytes. Client-side section now references postcard-encoded `PingMessage::Ping`/`PingMessage::Pong`. Return section preserved as-is.
 - **CHANGELOG.md**: Added entry under `[Unreleased]` noting the switch from raw byte-string protocol messages to postcard-encoded `PingMessage` enum.
+
+2026-06-03 — **Reviewer**: Reviewed changes against spec. Both `docs/automarket-iroh.md` and `CHANGELOG.md` match the specification exactly. Server section correctly references postcard-encoded `PingMessage` variants, client section references `PingMessage::Ping`/`PingMessage::Pong`, return section preserved. CHANGELOG entry follows the file's existing formatting conventions. No issues found. Marking as reviewed.
