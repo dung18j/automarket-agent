@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+import json
 import os
 import re
 import sys
 import time
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 
 AGENT_REPO = Path(__file__).parent.resolve()
@@ -15,6 +17,24 @@ POLL_INTERVAL = 15
 
 def log(msg):
     print(f"[agent] {msg}", flush=True)
+
+
+TRANSITIONS_LOG = AGENT_REPO / "transitions.jsonl"
+
+
+def log_transition(ticket, role, from_stage, to_stage, status, details=""):
+    entry = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "ticket": ticket.name,
+        "role": role,
+        "from": from_stage,
+        "to": to_stage,
+        "status": status,
+        "details": details,
+    }
+    with open(TRANSITIONS_LOG, "a") as f:
+        f.write(json.dumps(entry) + "\n")
+    log(f"[transition] {role}: {ticket.name} {from_stage} -> {to_stage} ({status})")
 
 
 def get_tickets(stage):
@@ -214,35 +234,43 @@ def main():
         drafts = get_tickets("draft")
         if drafts:
             ticket_path = drafts[0]
+            from_stage = get_stage(ticket_path)
             description = read_description(ticket_path)
             ensure_project()
             output, ok = run_opencode_admin(ticket_path, description)
             if ok:
-                set_stage(ticket_path, "draft_review")
-                git_commit_push(AGENT_REPO, f"{ticket_path.stem}: admin refined to draft_review")
+                to_stage = "draft_review"
+                set_stage(ticket_path, to_stage)
+                git_commit_push(AGENT_REPO, f"{ticket_path.stem}: admin refined to {to_stage}")
+                log_transition(ticket_path, "admin", from_stage, to_stage, "ok")
             else:
                 log(f"Admin failed for {ticket_path.name}")
+                log_transition(ticket_path, "admin", from_stage, from_stage, "failed", "opencode run failed")
 
         # Manager role: review refined tickets
         reviews = get_tickets("draft_review")
         if reviews:
             ticket_path = reviews[0]
+            from_stage = get_stage(ticket_path)
             description = read_description(ticket_path)
             ensure_project()
             output, ok = run_opencode_manager(ticket_path, description)
             if ok:
-                new_stage = get_stage(ticket_path)
-                log(f"Manager set {ticket_path.name} to {new_stage}")
-                git_commit_push(AGENT_REPO, f"{ticket_path.stem}: manager reviewed to {new_stage}")
+                to_stage = get_stage(ticket_path)
+                log(f"Manager set {ticket_path.name} to {to_stage}")
+                git_commit_push(AGENT_REPO, f"{ticket_path.stem}: manager reviewed to {to_stage}")
+                log_transition(ticket_path, "manager", from_stage, to_stage, "ok")
             else:
                 log(f"Manager failed for {ticket_path.name}")
+                log_transition(ticket_path, "manager", from_stage, from_stage, "failed", "opencode run failed")
 
         # Developer role: implement tasks
-        for stage in ("need_fix", "todo"):
-            tickets = [t for t in get_tickets(stage) if dependencies_satisfied(t)]
+        for coder_stage in ("need_fix", "todo"):
+            tickets = [t for t in get_tickets(coder_stage) if dependencies_satisfied(t)]
             if not tickets:
                 continue
             ticket_path = tickets[0]
+            from_stage = get_stage(ticket_path)
             description = read_description(ticket_path)
 
             claim_ticket(ticket_path)
@@ -253,20 +281,26 @@ def main():
             if ok:
                 new_stage = get_stage(ticket_path)
                 if new_stage == "draft_review":
-                    log(f"Coder returned {ticket_path.name} to draft_review")
-                    git_commit_push(AGENT_REPO, f"{ticket_path.stem}: coder returned to draft_review")
+                    to_stage = "draft_review"
+                    log(f"Coder returned {ticket_path.name} to {to_stage}")
+                    git_commit_push(AGENT_REPO, f"{ticket_path.stem}: coder returned to {to_stage}")
                 else:
+                    to_stage = "need_review"
                     git_commit_push(PROJECT_DIR, f"Implement {ticket_path.stem}", branch)
                     finish_ticket(ticket_path)
+                log_transition(ticket_path, "coder", from_stage, to_stage, "ok")
             else:
-                log(f"Reverting {ticket_path.name} to {stage}")
-                set_stage(ticket_path, stage)
-                git_commit_push(AGENT_REPO, f"{ticket_path.stem}: revert to {stage}")
+                to_stage = coder_stage
+                log(f"Reverting {ticket_path.name} to {to_stage}")
+                set_stage(ticket_path, to_stage)
+                git_commit_push(AGENT_REPO, f"{ticket_path.stem}: revert to {to_stage}")
+                log_transition(ticket_path, "coder", from_stage, to_stage, "failed", "opencode run failed")
 
         # Reviewer role: review implemented tickets
         need_reviews = get_tickets("need_review")
         if need_reviews:
             ticket_path = need_reviews[0]
+            from_stage = get_stage(ticket_path)
             log(f"Claim {ticket_path.name} -> reviewing")
             set_stage(ticket_path, "reviewing")
             git_commit_push(AGENT_REPO, f"{ticket_path.stem}: move to reviewing")
@@ -275,11 +309,13 @@ def main():
             subprocess.run(["git", "fetch", "origin"], cwd=PROJECT_DIR, capture_output=True, text=True)
             output, ok = run_opencode_reviewer(ticket_path, description)
             if ok:
-                new_stage = get_stage(ticket_path)
-                log(f"Reviewer set {ticket_path.name} to {new_stage}")
-                git_commit_push(AGENT_REPO, f"{ticket_path.stem}: reviewer {new_stage}")
+                to_stage = get_stage(ticket_path)
+                log(f"Reviewer set {ticket_path.name} to {to_stage}")
+                git_commit_push(AGENT_REPO, f"{ticket_path.stem}: reviewer {to_stage}")
+                log_transition(ticket_path, "reviewer", "reviewing", to_stage, "ok")
             else:
                 log(f"Reviewer failed for {ticket_path.name}")
+                log_transition(ticket_path, "reviewer", "reviewing", "reviewing", "failed", "opencode run failed")
 
         time.sleep(POLL_INTERVAL)
 
