@@ -1,7 +1,5 @@
 ---
-stage: reviewing
-claimed_from: need_review
-claimed_at: 2026-06-03T09:50:30Z
+stage: need_fix
 parent: 0003_postcard_serde_for_automarket_iroh
 ---
 
@@ -57,6 +55,8 @@ Add after the existing `pub mod ping;` line.
 - `cargo check -p automarket-iroh` compiles successfully.
 
 ## Conversation
+
+- **2026-06-03**: **Review by reviewer agent** — Issue found: the CHANGELOG modification in commit `a6bb3ad` replaced the existing `automarket-iroh: Added ping()...` entry with the new serde/postcard entry instead of adding a new entry. Both changes are distinct unreleased features and should both be present under `[Unreleased]`. Fix: revert the CHANGELOG to retain the `ping()` entry and add the serde/postcard entry as a new line.
 
 - **2026-06-03**: Implemented by coder agent:
   - Added `serde = { version = "1", features = ["derive"] }` and `postcard = { version = "1", default-features = false }` to `automarket-iroh/Cargo.toml`.
