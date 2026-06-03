@@ -1,7 +1,5 @@
 ---
-stage: doing
-claimed_from: need_fix
-claimed_at: 2026-06-03T09:52:33Z
+stage: need_review
 parent: 0003_postcard_serde_for_automarket_iroh
 ---
 
@@ -66,4 +64,5 @@ Add after the existing `pub mod ping;` line.
   - Added `pub mod protocol;` to `automarket-iroh/src/lib.rs`.
   - Added 2 unit tests: `test_ping_message_serialize_roundtrip` (postcard roundtrip for all variants) and `test_ping_message_debug_and_eq` (debug formatting and equality).
   - All 4 package tests pass (2 new + 2 existing ping tests).
-  - Updated `CHANGELOG.md` under [Unreleased].
+  - Updated `CHANGELOG.md` under [Unreleased] — added as a new line, preserving the existing `ping()` entry.
+  - Updated `docs/automarket-iroh.md` with a new section documenting the `protocol::PingMessage` enum.
