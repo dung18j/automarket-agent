@@ -1,5 +1,5 @@
 ---
-stage: doing
+stage: need_review
 depends_on: []
 ---
 
@@ -91,3 +91,13 @@ After the Crates table, add a **Development** section:
 - The Documentation table should reference `CHANGELOG.md` as it already does (line 107).
 - Keep the existing tone and style — concise, direct, minimal markdown.
 - Do not add emojis.
+
+## Implementation
+
+- **Section 1 (Architecture)**: Confirmed PostgreSQL already in `automarket-record` description. Added footnote `¹` with inline note about `--features pg`.
+- **Section 2 (Quick Start)**: Expanded Prerequisites with WASM target and PostgreSQL entries. Fixed Setup to create `.env` manually (no `.env.example` exists). Added rust-toolchain.toml note. Added Feature Flags sub-section with `--features pg` example. Expanded Browser UI with `cargo install trunk`. Added Devcontainer sub-section describing `.devcontainer/` contents (rust-analyzer, TOML formatter, LLDB, wasm32 target).
+- **Section 3 (Features)**: New Features section between Quick Start and Crates listing 5 key capabilities (WebSocket market data, data recording, P2P monitoring, REST API SDK, Browser UI).
+- **Section 4 (Documentation)**: Added Documentation table with all 8 docs + CHANGELOG.md, including `docs/project-rules.md` (was missing).
+- **Section 5 (Crates)**: Fixed `automarket-trait` description to show correct `Bot` trait signature: `Stream<Item=MarketItem>` + `symbol()`/`interval()` (removed incorrect handler method references).
+- **Section 6 (Development)**: Added RFC Process, Testing (`cargo test --workspace`), Formatting (`cargo fmt`), and Linting (`cargo clippy --workspace`) sub-sections. Retained existing Merge Policy and Changelog.
+- No tests required (documentation-only change). `cargo fmt --check` passes.
