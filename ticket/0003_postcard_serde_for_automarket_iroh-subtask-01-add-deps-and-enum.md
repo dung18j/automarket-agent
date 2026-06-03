@@ -1,7 +1,5 @@
 ---
-stage: reviewing
-claimed_from: need_review
-claimed_at: 2026-06-03T09:57:04Z
+stage: reviewed
 parent: 0003_postcard_serde_for_automarket_iroh
 ---
 
@@ -68,3 +66,5 @@ Add after the existing `pub mod ping;` line.
   - All 4 package tests pass (2 new + 2 existing ping tests).
   - Updated `CHANGELOG.md` under [Unreleased] — added as a new line, preserving the existing `ping()` entry.
   - Updated `docs/automarket-iroh.md` with a new section documenting the `protocol::PingMessage` enum.
+
+- **2026-06-03**: **Review by reviewer agent** — All requirements met. Dependencies correct, `PingMessage` enum matches spec, module registered properly, CHANGELOG preserves existing entries, docs updated. All 4 tests pass. Stage set to `reviewed`. No fixes needed.
