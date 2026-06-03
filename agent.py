@@ -19,6 +19,10 @@ STALE_TIMEOUT = 86400  # 24 hours
 def log(msg):
     print(f"[agent] {msg}", flush=True)
 
+def debug(msg):
+    ts = datetime.now(timezone.utc).strftime("%H:%M:%S.%f")[:15]
+    print(f"[debug {ts}] {msg}", flush=True)
+
 
 TRANSITIONS_LOG = AGENT_REPO / "transitions.jsonl"
 
@@ -105,15 +109,22 @@ def remove_front_matter_field(path, field):
 
 
 def git_commit_push(repo, msg, branch=None):
+    debug(f"git add -A in {repo}")
     subprocess.run(["git", "add", "-A"], cwd=repo, capture_output=True, text=True)
+    debug("git diff --cached --quiet")
     r = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=repo, capture_output=True)
     if r.returncode != 0:
+        debug(f"git commit -m '{msg}'")
         subprocess.run(["git", "commit", "-m", msg], cwd=repo, capture_output=True, text=True)
     if branch:
+        debug(f"git push -u origin {branch}")
         subprocess.run(["git", "push", "-u", "origin", branch], cwd=repo, capture_output=True, text=True)
     else:
+        debug("git push")
         subprocess.run(["git", "push"], cwd=repo, capture_output=True, text=True)
+    debug("git checkout main")
     subprocess.run(["git", "checkout", "main"], cwd=repo, capture_output=True, text=True)
+    debug("git_commit_push done")
 
 
 def dependencies_satisfied(path):
@@ -132,6 +143,7 @@ def dependencies_satisfied(path):
 def claim_ticket(ticket_path, new_stage):
     claimed_from = get_stage(ticket_path)
     log(f"Claim {ticket_path.name} -> {new_stage}")
+    debug(f"set_stage {ticket_path.name} -> {new_stage}")
     set_stage(ticket_path, new_stage)
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     set_front_matter_field(ticket_path, "claimed_at", now)
@@ -176,6 +188,7 @@ def check_expired_claims():
 
 def finish_ticket(ticket_path):
     log(f"Finish {ticket_path.name} -> need_review")
+    debug(f"set_stage {ticket_path.name} -> need_review")
     set_stage(ticket_path, "need_review")
     git_commit_push(AGENT_REPO, f"{ticket_path.stem}: move to need_review")
 
@@ -195,19 +208,27 @@ def send_comment(ticket_path, role, comment_text):
 def ensure_project():
     if not PROJECT_DIR.exists():
         log(f"Clone {PROJECT_REPO}")
+        debug("cloning project repo")
         subprocess.run(["git", "clone", PROJECT_REPO, str(PROJECT_DIR)], capture_output=True, text=True)
+    debug("git pull --rebase in project dir")
     subprocess.run(["git", "pull", "--rebase"], cwd=PROJECT_DIR, capture_output=True, text=True)
+    debug("ensure_project done")
 
 
 def create_ticket_branch(ticket_stem):
     branch = f"ticket/{ticket_stem}"
     log(f"Switching to branch {branch}")
+    debug(f"git checkout main in project dir")
     subprocess.run(["git", "checkout", "main"], cwd=PROJECT_DIR, capture_output=True, text=True)
+    debug(f"git branch -D {branch}")
     subprocess.run(["git", "branch", "-D", branch], cwd=PROJECT_DIR, capture_output=True, text=True)
+    debug(f"git checkout -b {branch}")
     subprocess.run(["git", "checkout", "-b", branch], cwd=PROJECT_DIR, capture_output=True, text=True)
+    debug("create_ticket_branch done")
     return branch
 
 def run_opencode_admin(ticket_path, description):
+    debug(f"run_opencode_admin START for {ticket_path.name}")
     msg = (
         f"You are acting as a admin. Refine the draft ticket: {ticket_path.stem}\n\n"
         f"Current Description:\n{description}\n\n"
@@ -228,10 +249,12 @@ def run_opencode_admin(ticket_path, description):
         log(f"opencode failed: {r.stderr.strip()[-300:]}")
         return "", False
     log(f"opencode done")
+    debug(f"run_opencode_admin END for {ticket_path.name} (rc={r.returncode})")
     return ((r.stdout or "") + "\n" + (r.stderr or "")).strip(), True
 
 
 def run_opencode_manager(ticket_path, description):
+    debug(f"run_opencode_manager START for {ticket_path.name}")
     msg = (
         f"You are acting as a manager. Review the refined ticket: {ticket_path.stem}\n\n"
         f"Description:\n{description}\n\n"
@@ -252,10 +275,12 @@ def run_opencode_manager(ticket_path, description):
         log(f"opencode failed: {r.stderr.strip()[-300:]}")
         return "", False
     log(f"opencode done")
+    debug(f"run_opencode_manager END for {ticket_path.name} (rc={r.returncode})")
     return ((r.stdout or "") + "\n" + (r.stderr or "")).strip(), True
 
 
 def run_opencode_reviewer(ticket_path, description):
+    debug(f"run_opencode_reviewer START for {ticket_path.name}")
     msg = (
         f"You are acting as a reviewer. Review the implemented ticket: {ticket_path.stem}\n\n"
         f"Description:\n{description}\n\n"
@@ -275,10 +300,12 @@ def run_opencode_reviewer(ticket_path, description):
         log(f"opencode failed: {r.stderr.strip()[-300:]}")
         return "", False
     log(f"opencode done")
+    debug(f"run_opencode_reviewer END for {ticket_path.name} (rc={r.returncode})")
     return ((r.stdout or "") + "\n" + (r.stderr or "")).strip(), True
 
 
 def run_opencode_coder(ticket_path, description):
+    debug(f"run_opencode_coder START for {ticket_path.name}")
     msg = (
         f"Implement this ticket: {ticket_path.stem}\n\n"
         f"Description:\n{description}\n\n"
@@ -300,15 +327,20 @@ def run_opencode_coder(ticket_path, description):
         log(f"opencode failed: {r.stderr.strip()[-300:]}")
         return "", False
     log(f"opencode done")
+    debug(f"run_opencode_coder END for {ticket_path.name} (rc={r.returncode})")
     return ((r.stdout or "") + "\n" + (r.stderr or "")).strip(), True
 
 
 
 def main():
     log(f"Agent started – polling every {POLL_INTERVAL}s")
+    iteration = 0
     while True:
+        iteration += 1
+        debug(f"=== Iteration {iteration} START ===")
         check_expired_claims()
 
+        debug("checking draft tickets")
         # Admin role: refine drafts
         drafts = get_tickets("draft")
         if drafts:
@@ -328,6 +360,7 @@ def main():
                 log(f"Admin failed for {ticket_path.name}")
                 log_transition(ticket_path, "admin", from_stage, from_stage, "failed", "opencode run failed")
 
+        debug("checking draft_review tickets")
         # Manager role: review refined tickets
         reviews = get_tickets("draft_review")
         if reviews:
@@ -352,6 +385,7 @@ def main():
                 log(f"Manager failed for {ticket_path.name}")
                 log_transition(ticket_path, "manager", from_stage, from_stage, "failed", "opencode run failed")
 
+        debug("checking need_fix/todo tickets")
         # Developer role: implement tasks
         for coder_stage in ("need_fix", "todo"):
             tickets = [t for t in get_tickets(coder_stage) if dependencies_satisfied(t)]
@@ -386,6 +420,7 @@ def main():
                 git_commit_push(AGENT_REPO, f"{ticket_path.stem}: revert to {to_stage}")
                 log_transition(ticket_path, "coder", from_stage, to_stage, "failed", "opencode run failed")
 
+        debug("checking need_review tickets")
         # Reviewer role: review implemented tickets
         need_reviews = get_tickets("need_review")
         if need_reviews:
@@ -406,7 +441,9 @@ def main():
                 log(f"Reviewer failed for {ticket_path.name}")
                 log_transition(ticket_path, "reviewer", "reviewing", "reviewing", "failed", "opencode run failed")
 
+        debug(f"sleeping {POLL_INTERVAL}s")
         time.sleep(POLL_INTERVAL)
+        debug(f"woke up")
 
 
 if __name__ == "__main__":

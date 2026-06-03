@@ -1,5 +1,5 @@
 ---
-# Possible stages: draft | todo | doing | need_review | reviewing | need_fix | done | rejected
+# Possible stages: draft | draft_refining | draft_review | draft_reviewing | todo | doing | need_review | reviewing | need_fix | done | rejected
 stage: done
 ---
 
